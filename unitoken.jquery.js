@@ -933,8 +933,8 @@ TODO:
 			
             if ( result == OK)
             {
-				log_.message('Will try to add the key');
-                list = createKeysResponse(type, list);
+				log_.message('Key found! We add it in the list');
+                list = createKeyResponse(type, list);
             }
             else
             {
@@ -949,45 +949,64 @@ TODO:
 			
             while( result == OK )
             {
-				log_.message('Will try to add the key');
-                list = createKeysResponse(type, list);
+				log_.message('Key found! We add it in the list');
+                list = createKeyResponse(type, list);
                 result = getKey(type, false);
             }
             return list;
         }
 
-        var createKeysResponse = function(type, list){
+        var createKeyResponse = function(type, list){
 
-            var k_h = interface_.KeyHandle;
-			
-            if( type == KEY_RSA )
-                list.push({pub_key:interface_.PubKeyHandle, priv_key:interface_.PriKeyHandle});
-            else if( type == KEY_AES )
+            var handle = interface_.KeyHandle;
+            var length = undefined;
+
+			switch(type)
             {
-                var result = interface_.UT_AESGetKeyLen(handle_, k_h);
-                if(result == OK)
-                    list.push({handle:k_h, length:interface_.KeyLength});
-                else
-                    list.push(k_h);
+                case KEY_RSA:
+                    var pub = interface_.PubKeyHandle;
+                    var priv = interface_.PriKeyHandle;
+                    var mod = undefined;
+                    var result = UT_RSAGetKeyPairModulus(handle_, handle);
+                    if(result == OK)
+                        mod = interface_.ModulusBits;
+                    list.push({
+                        pub_key: pub,
+                        priv_key:priv,
+                        modulus: mod
+                    });
+                    break;
+                case KEY_AES:
+                    var result = interface_.UT_AESGetKeyLen(handle_, handle);
+                    if(result == OK)
+                        len = interface_.KeyLength;
+                    list.push({
+                        handle:handle,
+                        length:len
+                    });
+                    break;
+                case KEY_MD5HMAC:
+                    var result = interface_.UT_MD5GetKeyLen(handle_, handle);
+                    if(result == OK)
+                        len = interface_.KeyLength;
+                    list.push({
+                        handle:handle,
+                        length:len
+                    });
+                    break;
+                case KEY_SHA1HMAC:
+                    var result = interface_.UT_SHA1GetKeyLen(handle_, handle);
+                    if(result == OK)
+                        len = interface_.KeyLength;
+                    list.push({
+                        handle:handle,
+                        length:len
+                    });
+                    break;
+                default:
+                    list.push(handle);
+                    break;
             }
-            else if( type == KEY_MD5HMAC )
-            {
-                var result = interface_.UT_MD5GetKeyLen(handle_, k_h);
-                if(result == OK)
-                    list.push({handle:k_h, length:interface_.KeyLength});
-                else
-                    list.push(k_h);
-            }
-            else if( type == KEY_SHA1HMAC )
-            {
-                var result = interface_.UT_SHA1GetKeyLen(handle_, k_h);
-                if(result == OK)
-                    list.push({handle:k_h, length:interface_.KeyLength});
-                else
-                    list.push(k_h);
-            }
-            else
-                list.push(k_h);
             return list;
         }
         
@@ -1049,6 +1068,84 @@ TODO:
                 };
             }
             return result>>>0;
+        }
+
+        token.getRSAPublicKeyHandle = function(key){ return getRSAKeyHandle(KEY_RSA_PRIVATE, key);}
+        token.getRSAPrivateKeyHandle = function(key){ return getRSAKeyHandle(KEY_RSA_PUBLIC, key);}
+        var getRSAKeyHandle = function(type, key)
+        {
+            if( handle_ == undefined )
+                return undefined;
+            
+            log_.message('Trying to get handle of RSA key from token on slot '+slot_);
+
+            var result = undefined;
+            var value = undefined
+
+            switch(type)
+            {
+                case KEY_RSA_PUBLIC:
+                    result = interface_.embed1.UT_RSAGetPubKeyHandle(handle_, key);
+                    if(result == OK)
+                    {
+                        value = interface_.PubKeyHandle;
+                    }
+                    break;
+                case KEY_RSA_PRIVATE:
+                    result = interface_.embed1.UT_RSAGetPriKeyHandle(handle_, key);
+                    if(result == OK)
+                    {
+                        value = interface_.PriKeyHandle;
+                    }
+                    break;
+                default:
+                    result = KEY_BAD_TYPE;
+                    break;
+            }
+
+            log_.code(result);
+            
+            if(result == OK)
+            {
+                log_.message('\tRSA key handle is: '+value);
+                return value;
+            }
+            return result;
+        }
+
+        /*
+            Import / Export
+            NOTA: this plugin can not import, the functions are not yet implemented by the Firefox plugin.
+        */
+        token.exportRSAPublicKey = function(key){ return exportKey(KEY_RSA_PUBLIC, key);}
+        var exportKey = function(type, key)
+        {
+            if( handle_ == undefined )
+                return undefined;
+            
+            log_.message('Trying to export key from token on slot '+slot_);
+
+            var result = undefined;
+
+            switch(type)
+            {
+                case KEY_RSA_PUBLIC:
+                    result = interface_.embed1.UT_RSAPubKeyExport(handle_, key);
+                    break;
+                default:
+                    result = KEY_BAD_TYPE;
+                    break;
+            }
+
+            log_.code(result);
+            
+            if(result == OK)
+            {
+                var value = interface_.base64pubkey;
+                log_.message('\tRSA public key is: '+value);
+                return value;
+            }
+            return result;
         }
 
         /*
