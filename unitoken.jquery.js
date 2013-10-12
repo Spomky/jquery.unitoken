@@ -338,12 +338,12 @@ TODO:
         /*
          Token informations
         */
-        token.getSlot = function()
+        var getSlot = function()
         {
             return slot_;
         }
         
-        token.getType = function()
+        var getType = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -363,7 +363,7 @@ TODO:
             return undefined;
         }
         
-        token.getFirmwareVersion = function()
+        var getFirmwareVersion = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -410,7 +410,7 @@ TODO:
             return result>>>0;
         }
         
-        token.getCurrentUserLevel = function()
+        var getCurrentUserLevel = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -431,18 +431,24 @@ TODO:
             return undefined;
         }
         
-        token.changePin = function(type, oldPassword, newPassword, mode)
+        token.changePin = function(oldPassword, newPassword, mode)
         {
             if( handle_ == undefined )
                 return undefined;
             
             message('Trying to change PIN of token on slot '+slot_);
 			
-			if(mode == undefined)
+			if(!mode)
 			{
 				message('Mode is not set. Using current permission');
 				mode = 0x1;
 			}
+
+            var type = getCurrentUserLevel();
+            if( mode == 0x2)
+                type = USER_LEVEL_USER;
+
+            message('Will change password of '+(type==1?'user':'admin'));
 
             var result = interface_.UT_ChangePin(handle_, type, mode, oldPassword, newPassword);
             
@@ -450,7 +456,7 @@ TODO:
             return result>>>0;
         }
         
-        token.getID = function()
+        var getID = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -484,7 +490,7 @@ TODO:
             return result>>>0;
         }
         
-        token.getHID = function()
+        var getHID = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -505,7 +511,7 @@ TODO:
             return undefined;
         }
         
-        token.getSoftID = function()
+        var getSoftID = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -552,7 +558,7 @@ TODO:
             return result>>>0;
         }
         
-        token.getAttemptCount = function()
+        var getAttemptCount = function()
         {
             if( handle_ == undefined )
                 return undefined;
@@ -607,14 +613,14 @@ TODO:
             message('Trying to get details of token on slot '+slot_);
             
             return {
-                'slot': token.getSlot(),
-                'type': token.getType(),
-                'firmware_version': token.getFirmwareVersion(),
-                'id': token.getID(),
-                'hid': token.getHID(),
-                'soft_id': token.getSoftID(),
-                'attempt_count': token.getAttemptCount(),
-                'user_level': token.getCurrentUserLevel(),
+                'slot': getSlot(),
+                'type': getType(),
+                'firmware_version': getFirmwareVersion(),
+                'id': getID(),
+                'hid': getHID(),
+                'soft_id': getSoftID(),
+                'attempt_count': getAttemptCount(),
+                'user_level': getCurrentUserLevel(),
                 'token': this
             };
         }
@@ -702,7 +708,7 @@ TODO:
         token.encryptDES3 = function(key, data, data_length){ return encrypt(KEY_DES3, key, data, data_length);}
         token.encryptAES = function(key, data, data_length){ return encrypt(KEY_AES, key, data, data_length);}
         token.encryptRSAPublicKey = function(key, data, data_length){ return encrypt(KEY_RSA_PUBLIC, key, data, data_length);}
-        token.encryptRSAPublicKey = function(key, data, data_length){ return encrypt(KEY_RSA_PRIVATE, key, data, data_length);}
+        token.encryptRSAPrivateKey = function(key, data, data_length){ return encrypt(KEY_RSA_PRIVATE, key, data, data_length);}
         token.MD5HMAC = function(key, data, data_length){ return encrypt(KEY_MD5HMAC, key, data, data_length);}
         token.MD5 = function(data, data_length){ return encrypt(KEY_MD5, data, data_length);}
         token.SHA1HMAC = function(key, data, data_length){ return encrypt(KEY_SHA1HMAC, key, data, data_length);}
@@ -813,9 +819,10 @@ TODO:
         token.deleteDESKey = function(key){ return deleteKey(KEY_DES, key);}
         token.deleteDES3Key = function(key){ return deleteKey(KEY_DES3, key);}
         token.deleteAESKey = function(key){ return deleteKey(KEY_AES, key);}
+        token.deleteRSAKeyPair = function(pub_key, priv_key){ return deleteKey(KEY_AES, pub_key, priv_key);}
         token.deleteMD5HMACKey = function(key){ return deleteKey(KEY_MD5HMAC, key);}
         token.deleteSHA1HMACKey = function(key){ return deleteKey(KEY_SHA1HMAC, key);}
-        var deleteKey = function(type, key)
+        var deleteKey = function(type, key, key2)
         {
             if( handle_ == undefined )
                 return undefined;
@@ -835,6 +842,9 @@ TODO:
                 case KEY_AES:
                     result = interface_.UT_AESDeleteKey(handle_, key);
                     break;
+                case KEY_RSA:
+                    result = interface_.RSADeleteKeyPair(handle_, key, key2);
+                    break;
                 case KEY_MD5HMAC:
                     result = interface_.UT_MD5DeleteKey(handle_, key);
                     break;
@@ -850,13 +860,24 @@ TODO:
             return result>>>0;
         }
         
-        token.countDESKeys = function(){ return countKeys(KEY_DES);}
-        token.countDES3Keys = function(){ return countKeys(KEY_DES3);}
-        token.countAESKeys = function(){ return countKeys(KEY_AES);}
-        token.countRSAKeys = function(){ return countKeys(KEY_RSA);}
-        token.countMD5HMACKeys = function(){ return countKeys(KEY_MD5HMAC);}
-        token.countSHA1HMACKeys = function(){ return countKeys(KEY_SHA1HMAC);}
-        var countKeys = function(type)
+        token.countKeys = function()
+        {
+            return list = {
+                DES: countDESKeys(),
+                DES3: countDES3Keys(),
+                AES: countDESKeys(),
+                RSA: countRSAKeys(),
+                MD5HMAC: countMD5HMACKeys(),
+                SHA1HMAC: countSHA1HMACKeys()
+            };
+        }
+        token.countDESKeys = function(){ return count_Keys(KEY_DES);}
+        token.countDES3Keys = function(){ return count_Keys(KEY_DES3);}
+        token.countAESKeys = function(){ return count_Keys(KEY_AES);}
+        token.countRSAKeys = function(){ return count_Keys(KEY_RSA);}
+        token.countMD5HMACKeys = function(){ return count_Keys(KEY_MD5HMAC);}
+        token.countSHA1HMACKeys = function(){ return count_Keys(KEY_SHA1HMAC);}
+        var count_Keys = function(type)
         {
             if( handle_ == undefined )
                 return undefined;
@@ -899,13 +920,24 @@ TODO:
             return result>>>0;
         }
         
-        token.getDESKeys = function(){ return getKeys(KEY_DES);}
-        token.getDES3Keys = function(){ return getKeys(KEY_DES3);}
-        token.getAESKeys = function(){ return getKeys(KEY_AES);}
-        token.getRSAKeys = function(){ return getKeys(KEY_RSA);}
-        token.getMD5HMACKeys = function(){ return getKeys(KEY_MD5HMAC);}
-        token.getSHA1HMACKeys = function(){ return getKeys(KEY_SHA1HMAC);}
-        var getKeys = function(type)
+        token.getKeys = function()
+        {
+            return list = {
+                DES: getDESKeys(),
+                DES3: getDES3Keys(),
+                AES: countDESKeys(),
+                //RSA: getAESKeys(),
+                MD5HMAC: getMD5HMACKeys(),
+                SHA1HMAC: getSHA1HMACKeys()
+            };
+        }
+        token.getDESKeys = function(){ return get_Keys(KEY_DES);}
+        token.getDES3Keys = function(){ return get_Keys(KEY_DES3);}
+        token.getAESKeys = function(){ return get_Keys(KEY_AES);}
+        token.getRSAKeys = function(){ return get_Keys(KEY_RSA);}
+        token.getMD5HMACKeys = function(){ return get_Keys(KEY_MD5HMAC);}
+        token.getSHA1HMACKeys = function(){ return get_Keys(KEY_SHA1HMAC);}
+        var get_Keys = function(type)
         {
             if( handle_ == undefined )
                 return undefined;
@@ -1175,7 +1207,7 @@ TODO:
             var result = interface_.UT_FS_GetFirstFileName(handle_);
             if ( result == OK)
             {
-                var file = new File(interface_, handle_, interface_.FileName, settings_);
+                var file = token.getFile(interface_.FileName);
                 list.push({details:file.details(), file: file});
             }
             else
@@ -1186,11 +1218,18 @@ TODO:
             result = interface_.UT_FS_GetNextFileName(handle_);
             while( result == OK )
             {
-                var file = new File(interface_, handle_, interface_.FileName, settings_);
+                var file = token.getFile(interface_.FileName);
                 list.push({details:file.details(), file: file});
                 result = interface_.UT_FS_GetNextFileName(handle_);
             }
             return list;
+        }
+
+        token.getFile = function(filename)
+        {
+            if( handle_ == undefined )
+                return undefined;
+            return new File(interface_, handle_, filename);
         }
 
         
