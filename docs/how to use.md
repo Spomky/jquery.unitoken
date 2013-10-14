@@ -37,7 +37,7 @@ All methods return a JSON list like this one:
 		data: … //Data returned by the method or « undefined » if the methods returns nothing
 	}
 
- See [response codes](response_codes) for more informations about these codes and messages.
+ See [response codes](response_codes.md) for more informations about these codes and messages.
 
 ### Logon / Logoff and PIN code ###
 
