@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>List tokens and get informations</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/unitoken.jquery.js"></script>
+    </head>
+    <body>
+        <h1>List tokens and get informations</h1>
+        <embed id="interface" class="interface" type="application/mozilla-npsecuunitoken-scriptable-plugin" />
+        <div id="tokens">
+			<select id="token_list" name="token_list">
+				<option value="-1">--No token found--</option>
+			</select>
+			<input type="button" id="update_tokens" value="Update list">
+			<div id="token_informations"></div>
+		</div>
+		<div>
+			<select id="user_level" name="user_level">
+				<option value="1">User</option>
+				<option value="2">Admin</option>
+			</select>
+			<input type="password" id="pin" placeholder="Enter your PIN code">
+			<input type="button" id="logon" value="Log on">
+			<input type="button" id="logoff" value="Log off">
+		</div>
+        <script type="text/javascript" src="js/logon-logoff.js"></script>
+    </body>
+</html>

@@ -1,3 +1,5 @@
+# How to use #
+
 ## Basics ##
 Here are some basics methods. Look at the samples to get more about these functions.
 
@@ -26,6 +28,17 @@ If the slot is invalid, all methods of the token object will return « undefined
 Will update the tokens list. Usefull when you just have connected a new token.
 
 ## Token methods ##
+
+All methods return a JSON list like this one:
+
+	{
+		code: … //Represent the response code.
+		message: … //A textual message depending on the response code
+		data: … //Data returned by the method or « undefined » if the methods returns nothing
+	}
+
+ See [response codes](response_codes) for more informations about these codes and messages.
+
 ### Logon / Logoff and PIN code ###
 
 	var token = $my_interface.getToken(0);

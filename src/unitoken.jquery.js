@@ -1,4 +1,4 @@
-/*! UniToken jQuery Plugin v1.1 | (c) 2013 Florent Morselli | www.morselli.fr
+/*! UniToken jQuery Plugin v1.2 | (c) 2013 Florent Morselli | www.morselli.fr
 
 This plugin aims to create an interface to get access UniToken keys and retreive files, certificates and methods provided them.
 */
@@ -11,7 +11,7 @@ TODO:
 
 (function($) {
     var PLUGIN_MAJOR_VERSION              = 1;
-    var PLUGIN_MINOR_VERSION              = 1;
+    var PLUGIN_MINOR_VERSION              = 2;
     var PLUGIN_VERSION              = PLUGIN_MAJOR_VERSION<<4+PLUGIN_MINOR_VERSION;
 
     // ---------  macro code -----------------
@@ -19,7 +19,7 @@ TODO:
     var USER_LEVEL_USER             = 0x01;
     var USER_LEVEL_ADMIN            = 0x02;
 
-    // ---------  error code -----------------
+    // ---------  response codes -----------------
     var OK                    = 0x00000000;
     var NOT_INITIALIZE        = 0xC0000001;
     var BUFFER_TOO_SMALL      = 0xC0000002;
@@ -71,125 +71,138 @@ TODO:
     };
     var settings = {};
 
-    var message = function(msg)
+    var getCodeMessage = function(code)
+    {
+		code >>>= 0;
+		var msg;
+		switch(code)
+		{
+			case OK:
+				msg = "No error";
+				break;
+			case NOT_INITIALIZE:
+				msg = "Library not initialized";
+				break;
+			case BUFFER_TOO_SMALL:
+				msg = "Buffer is not big enough";
+				break;
+			case ARGUMENTS_BAD:
+				msg = "Invalid parameters";
+				break;
+			case NO_PERMISSION:
+				msg = "No permission";
+				break;
+			case NO_TOKEN:
+				msg = "No token available";
+				break;
+			case TOKEN_HANDLE_INVALID:
+				msg = "Invalid token handle";
+				break;
+			case SLOT_FULL:
+				msg = "Slot is full. No more token can be added";
+				break;
+			case SLOT_ID_INVALID:
+				msg = "Invalid slot";
+				break;
+			case DEVICE_ERROR:
+				msg = "Device error";
+				break;
+			case ALREADY_INITIALIZE:
+				msg = "The token is already initialized";
+				break;
+			case DEVICE_TX:
+				msg = "Communication error";
+				break;
+			case PIN_ERROR:
+				msg = "PIN error";
+				break;
+			case USER_LOCKED:
+				msg = "User has been locked";
+				break;
+			case USER_FULL:
+				msg = "No more users can logon";
+				break;
+			case NO_USER:
+				msg = "No such user available";
+				break;
+			case DEVICE_NEED_OPEN:
+				msg = "Device is not opened yet";
+				break;
+			case KEY_EXIST:
+				msg = "The key already exists";
+				break;
+			case NO_KEY:
+				msg = "No key available";
+				break;
+			case KEY_FULL:
+				msg = "The token is full and can't generate new keys";
+				break;
+			case KEY_HANDLE_INVALID:
+				msg = "Key handle error";
+				break;
+			case KEY_GENERATE:
+				msg = "Key generation failed";
+				break;
+			case NOT_ALLOWED:
+				msg = "Operation not allowed";
+				break;
+			case OPERATE_INVALID:
+				msg = "Invalid operation";
+				break;
+			case FS_INITIALIZE_FAILED:
+				msg = "File initialization failed";
+				break;
+			case FS_NOSPACE:
+				msg = "Not enough filesystem space";
+				break;
+			case FS_OFFSET_INVALID:
+				msg = "Designated file offset is invalid";
+				break;
+			case FS_DATA_LEN_RANGE:
+				msg = "Beyond data range";
+				break;
+			case FS_NO_OPEN:
+				msg = "The file is not opened";
+				break;
+			case FS_NO_FILE:
+				msg = "No file";
+				break;
+			case FS_LIST_END:
+				msg = "End of file list";
+				break;
+			case FS_NAME_LEN_RANGE:
+				msg = "Filename is too long";
+				break;
+			case FS_FILE_EXIST:
+				msg = "The file already exists";
+				break;
+			default:
+				msg = "The result of the method has code: 0x"+code.toString(16);
+		};
+		return msg;
+    }
+
+	var log = {};
+    log.message = function(msg)
     {
         if(settings.debug)
              console.log(msg);
     }
 
-    var code = function(code)
+    log.code = function(code)
     {
         if(settings.debug)
-        {
-            code >>>= 0;
-           var msg;
-            switch(code)
-            {
-                case OK:
-                    msg = "OK";
-                    break;
-                case NOT_INITIALIZE:
-                    msg = "Library not initialized";
-                    break;
-                case BUFFER_TOO_SMALL:
-                    msg = "Buffer is not big enough";
-                    break;
-                case ARGUMENTS_BAD:
-                    msg = "Invalid parameter";
-                    break;
-                case NO_PERMISSION:
-                    msg = "No permission";
-                    break;
-                case NO_TOKEN:
-                    msg = "No token available";
-                    break;
-                case TOKEN_HANDLE_INVALID:
-                    msg = "Invalid token handle";
-                    break;
-                case SLOT_FULL:
-                    msg = "Slot is full. No more token can be added";
-                    break;
-                case SLOT_ID_INVALID:
-                    msg = "Invalid slot";
-                    break;
-                case DEVICE_ERROR:
-                    msg = "Device error";
-                    break;
-                case ALREADY_INITIALIZE:
-                    msg = "The token is already initialized";
-                    break;
-                case DEVICE_TX:
-                    msg = "Communication error";
-                    break;
-                case PIN_ERROR:
-                    msg = "PIN error";
-                    break;
-                case USER_LOCKED:
-                    msg = "User has been locked";
-                    break;
-                case USER_FULL:
-                    msg = "No more users can logon";
-                    break;
-                case NO_USER:
-                    msg = "No such user available";
-                    break;
-                case DEVICE_NEED_OPEN:
-                    msg = "Device is not open yet";
-                    break;
-                case KEY_EXIST:
-                    msg = "The key already existed";
-                    break;
-                case NO_KEY:
-                    msg = "No key available";
-                    break;
-                case KEY_FULL:
-                    msg = "The token is full and can't generate keys";
-                    break;
-                case KEY_HANDLE_INVALID:
-                    msg = "Key handle error";
-                    break;
-                case KEY_GENERATE:
-                    msg = "Key generation failed";
-                    break;
-                case NOT_ALLOWED:
-                    msg = "Not allow operation";
-                    break;
-                case OPERATE_INVALID:
-                    msg = "Invalid operation";
-                    break;
-                case FS_INITIALIZE_FAILED:
-                    msg = "File initialization failed";
-                    break;
-                case FS_NOSPACE:
-                    msg = "Not enough file system storage";
-                    break;
-                case FS_OFFSET_INVALID:
-                    msg = "Designated file offset is invalid";
-                    break;
-                case FS_DATA_LEN_RANGE:
-                    msg = "Beyond data range";
-                    break;
-                case FS_NO_OPEN:
-                    msg = "No opened file is available";
-                    break;
-                case FS_NO_FILE:
-                    msg = "No file";
-                    break;
-                case FS_LIST_END:
-                    msg = "End of file list";
-                    break;
-                case FS_NAME_LEN_RANGE:
-                    msg = "File name is too long";
-                    break;
-                case FS_FILE_EXIST:
-                    msg = "File already existed";
-                    break;
-                default:
-                    msg = "The result of the method has code: "+code;
-            };
-            message(msg);
-        }
+			log.message( getCodeMessage(code) );
     }
+	
+	var prepareResponse = function(code, data)
+	{
+		return {
+			code: code >>>0,
+			message: getCodeMessage(code),
+			result: data
+		};
+	}
 
 
     var File = function(iface, handle, filename)
@@ -203,61 +216,69 @@ TODO:
         {}
 
         file.open = function(){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Opening '+filename_);
+            log.message('Opening '+filename_);
 
             var result = interface_.UT_FS_OpenFile(handle_, filename_);
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
 
         file.close = function(){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Closing '+filename_);
+            log.message('Closing '+filename_);
 
             var result = interface_.UT_FS_CloseFile(handle_, filename_);
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
 
         file.remove = function(){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Removing '+filename_);
+            log.message('Removing '+filename_);
 
             var result = interface_.UT_FS_DeleteFile(handle_, filename_);
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
 
         var size = function(){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Getting size of '+filename_);
+            log.message('Getting size of '+filename_);
 
             var result = interface_.UT_FS_GetFileSize(handle_, filename_);
-            code(result);
+            log.code(result);
             if(result == OK)
-                return interface_.FileSize;
+			{
+				var value = interface_.FileSize;
+                return prepareResponse(result,value);
+			}
+			
             return undefined;
         }
 
         var permission = function(){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Getting permission of '+filename_);
+            log.message('Getting permission of '+filename_);
 
             var result = interface_.UT_FS_GetFilePermission(handle_, filename_);
-            code(result);
+            log.code(result);
             if(result == OK)
-                return interface_.FilePermission;
+			{
+				var value = interface_.FilePermission;
+                return prepareResponse(result,value);
+			}
+			
             return undefined;
         }
 
@@ -270,27 +291,30 @@ TODO:
         }
 
         file.read = function(offset, len){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Trying to read '+filename_+' from offset '+offset+' with length '+len);
+            log.message('Trying to read '+filename_+' from offset '+offset+' with length '+len);
 
             var result = interface_.UT_FS_ReadFile(handle_, filename_, offset, len);
-            code(result);
+            log.code(result);
             if(result == OK)
-                return interface_.OutBuf;
-            return result>>>0;
+			{
+				var value = interface_.OutBuf;
+                return prepareResponse(result,value);
+			}
+            return prepareResponse(result,undefined);
         }
 
         file.write = function(offset, len, data){
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 
-            message('Trying to write '+filename_+' from offset '+offset+' with data length '+len);
+            log.message('Trying to write '+filename_+' from offset '+offset+' with data length '+len);
             
             var result = interface_.UT_FS_WriteFile(handle_, filename_, offset, len, data);
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         init();
@@ -306,33 +330,34 @@ TODO:
         
         var init = function()
         {
-            message('New token interface initialized on slot '+slot_);
+            log.message('New token interface initialized on slot '+slot_);
         }
         
         var open = function()
         {
-            message('Trying to open token on slot '+slot_);
+            log.message('Trying to open token on slot '+slot_);
             var result = interface_.UT_OpenDevice(slot_);
-            code(result);
+            log.code(result);
             if(result == OK)
             {
                 handle_ = interface_.Handle;
-				message('Handle is 0x'+handle_.toString(16));
+				log.message('Handle is 0x'+handle_.toString(16));
             }
+			return prepareResponse(result,undefined);
         }
         
         //Useless
         var close = function()
         {
-            if( handle_== undefined )
-                return undefined;
+            //if( handle_== undefined )
+                //return undefined;
 			
-            message('Trying to close token on slot '+slot_);
+            log.message('Trying to close token on slot '+slot_);
 
             var result = interface_.UT_CloseDevice(handle_);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         /*
@@ -345,19 +370,19 @@ TODO:
         
         var getType = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
 
-            message('Trying to get type of token on slot '+slot_);
+            log.message('Trying to get type of token on slot '+slot_);
             
             var result = interface_.UT_GetTokenType(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
                 var value = interface_.TokenType;
-                message('\tType is '+value);
+                log.message('\tType is '+value);
                 return value;
             }
             return undefined;
@@ -365,19 +390,19 @@ TODO:
         
         var getFirmwareVersion = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
 
-            message('Trying to get firmware version of token on slot '+slot_);
+            log.message('Trying to get firmware version of token on slot '+slot_);
             
             var result = interface_.UT_GetFirmwareVersion(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.FirmwareVersion;
-                message('\tFirmware version is 0x'+value.toString(16));
+                log.message('\tFirmware version is 0x'+value.toString(16));
                 return value;
             }
                 
@@ -386,45 +411,45 @@ TODO:
         
         token.logon = function(type, password)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
 
-            message('Trying to logon token on slot '+slot_);
+            log.message('Trying to logon token on slot '+slot_);
             
             var result = interface_.UT_Logon(handle_, type, password);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         token.logoff = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
 
-            message('Trying to logoff token on slot '+slot_);
+            log.message('Trying to logoff token on slot '+slot_);
             
             var result = interface_.UT_Logoff(handle_);
                 
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         var getCurrentUserLevel = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
 
-            message('Trying to get current user level of token on slot '+slot_);
+            log.message('Trying to get current user level of token on slot '+slot_);
             
             var result = interface_.UT_GetCurrentUserLevel(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.Level;
-                message('\tCurrent user level is '+(value==0?'guest':(value==1?'user':'admin')));
+                log.message('\tCurrent user level is '+(value==0?'guest':(value==1?'user':'admin')));
                 return value;
             }
             
@@ -433,14 +458,14 @@ TODO:
         
         token.changePin = function(oldPassword, newPassword, mode)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to change PIN of token on slot '+slot_);
+            log.message('Trying to change PIN of token on slot '+slot_);
 			
 			if(!mode)
 			{
-				message('Mode is not set. Using current permission');
+				log.message('Mode is not set. Using current permission');
 				mode = 0x1;
 			}
 
@@ -448,29 +473,29 @@ TODO:
             if( mode == 0x2)
                 type = USER_LEVEL_USER;
 
-            message('Will change password of '+(type==1?'user':'admin'));
+            log.message('Will change password of '+(type==1?'user':'admin'));
 
             var result = interface_.UT_ChangePin(handle_, type, mode, oldPassword, newPassword);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         var getID = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get ID of token on slot '+slot_);
+            log.message('Trying to get ID of token on slot '+slot_);
             
             var result = interface_.UT_GetID(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
                 var value = interface_.TokenId;
-                message('\tThe ID is '+value);
+                log.message('\tThe ID is '+value);
                 return value;
             }
 
@@ -479,33 +504,33 @@ TODO:
         
         token.setID = function(id)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to set ID of token on slot '+slot_);
+            log.message('Trying to set ID of token on slot '+slot_);
             
             var result = interface_.UT_SetID(handle_, id);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         var getHID = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get HID of token on slot '+slot_);
+            log.message('Trying to get HID of token on slot '+slot_);
             
             var result = interface_.UT_GetHID(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.HID;
-                message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
-                return interface_.HID;
+                log.message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
+                return value;
             }
             
             return undefined;
@@ -513,20 +538,20 @@ TODO:
         
         var getSoftID = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get Soft ID of token on slot '+slot_);
+            log.message('Trying to get Soft ID of token on slot '+slot_);
             
             var result = interface_.UT_GetSoftID(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.SoftID;
-                message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
-                return interface_.SoftID;
+                log.message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
+                return value;
             }
             
             return undefined;
@@ -534,45 +559,45 @@ TODO:
         
         token.setSoftID = function(id)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to set Soft ID of token on slot '+slot_);
+            log.message('Trying to set Soft ID of token on slot '+slot_);
             
             var result = interface_.UT_SetSoftID(handle_, id);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         token.setLed = function(mode)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to set LED mode of token on slot '+slot_);
+            log.message('Trying to set LED mode of token on slot '+slot_);
             
             var result = interface_.UT_LED(handle_, mode);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         var getAttemptCount = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get attempt count of token on slot '+slot_);
+            log.message('Trying to get attempt count of token on slot '+slot_);
             
             var result = interface_.UT_GetAttemptCount(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.UserAttempt;
-                message('\tAttempt count is at '+value);
+                log.message('\tAttempt count is at '+value);
                 return value;
             }
             
@@ -581,36 +606,36 @@ TODO:
         
         token.setAttemptCount = function(count)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to set attempt count of token on slot '+slot_);
+            log.message('Trying to set attempt count of token on slot '+slot_);
             
             var result = interface_.UT_SetAttemptCount(handle_, count);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         token.format = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to format token on slot '+slot_);
+            log.message('Trying to format token on slot '+slot_);
             
             var result = interface_.UT_Format(handle_);
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         token.getDetails = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get details of token on slot '+slot_);
+            log.message('Trying to get details of token on slot '+slot_);
             
             return {
                 'slot': getSlot(),
@@ -632,23 +657,23 @@ TODO:
         */
         token.getRandomData = function(length)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get random data from token on slot '+slot_);
+            log.message('Trying to get random data from token on slot '+slot_);
             
             var result = interface_.UT_Rand(handle_, length);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
 				var value = interface_.OutBuf;
-                message('\tData: '+value);
-                return value;
+                log.message('\tData: '+value);
+                return prepareResponse(result,value);
             }
 
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
         
         token.generateDESKey = function(){ return generateKey(KEY_DES);}
@@ -661,10 +686,10 @@ TODO:
         token.generateSHA1HMACKey = function(length){ return generateKey(KEY_SHA1HMAC,length);}
         var generateKey = function(type, length)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get generate a 0x'+type.toString(16)+' key with token on slot '+slot_);
+            log.message('Trying to get generate a 0x'+type.toString(16)+' key with token on slot '+slot_);
             
             var result = undefined;
             
@@ -693,15 +718,15 @@ TODO:
                     break;
             };
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
 			{
 				var value = interface_.KeyHandle;
-                message('\tKey handle is 0x'+value.toString(16));
-                return value;
+                log.message('\tKey handle is 0x'+value.toString(16));
+                return prepareResponse(result,value);
 			}
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
         
         token.encryptDES = function(key, data, data_length){ return encrypt(KEY_DES, key, data, data_length);}
@@ -715,10 +740,10 @@ TODO:
         token.SHA1 = function(data, data_length){ return encrypt(KEY_SHA1, data, data_length);}
         var encrypt = function(type,key, data, data_length)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to encrypt data with key 0x'+key.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to encrypt data with key 0x'+key.toString(16)+' of token on slot '+slot_);
             
             var result = undefined;
             
@@ -756,7 +781,7 @@ TODO:
                     break;
             };
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
@@ -767,7 +792,7 @@ TODO:
                     length: interface_.EncryptLength
                 };
             }
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
         
         token.decryptDES = function(key, data, data_length){ return decrypt(KEY_DES, key, data, data_length);}
@@ -777,10 +802,10 @@ TODO:
         token.decryptRSArivateKey = function(key, data, data_length){ return decrypt(KEY_RSA_PRIVATE, key, data, data_length);}
         var decrypt = function(type,key, data, data_length)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to decrypt data with key 0x'+key.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to decrypt data with key 0x'+key.toString(16)+' of token on slot '+slot_);
             
             var result = undefined;
             
@@ -806,14 +831,14 @@ TODO:
                     break;
             };
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
                 return {
                     data: interface_.OutBuf,
                     length: interface_.OutBufLength
                 };
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
         
         token.deleteDESKey = function(key){ return deleteKey(KEY_DES, key);}
@@ -824,10 +849,10 @@ TODO:
         token.deleteSHA1HMACKey = function(key){ return deleteKey(KEY_SHA1HMAC, key);}
         var deleteKey = function(type, key, key2)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to delete key 0x'+key.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to delete key 0x'+key.toString(16)+' of token on slot '+slot_);
             
             var result = undefined;
             
@@ -856,8 +881,8 @@ TODO:
                     break;
             };
             
-            code(result);
-            return result>>>0;
+            log.code(result);
+            return prepareResponse(result,undefined);
         }
         
         token.countKeys = function()
@@ -879,10 +904,10 @@ TODO:
         token.countSHA1HMACKeys = function(){ return count_Keys(KEY_SHA1HMAC);}
         var count_Keys = function(type)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to count keys 0x'+type.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to count keys 0x'+type.toString(16)+' of token on slot '+slot_);
             
             var result = undefined;
             
@@ -911,13 +936,13 @@ TODO:
                     break;
             };
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
                 return interface_.KeyCount;
             if(result == UT_NO_KEY)
                 return 0;
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
         
         token.getKeys = function()
@@ -939,19 +964,19 @@ TODO:
         token.getSHA1HMACKeys = function(){ return get_Keys(KEY_SHA1HMAC);}
         var get_Keys = function(type)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get first key 0x'+type.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to get first key 0x'+type.toString(16)+' of token on slot '+slot_);
             
             var list = [];
             var result = getKey(type, true);
             
-            code(result);
+            log.code(result);
 			
             if ( result == OK)
             {
-				message('Key found! We add it in the list');
+				log.message('Key found! We add it in the list');
                 list = createKeyResponse(type, list);
             }
             else
@@ -959,15 +984,15 @@ TODO:
                 return list;
             }
             
-            message('Trying to get next keys 0x'+type.toString(16)+' of token on slot '+slot_);
+            log.message('Trying to get next keys 0x'+type.toString(16)+' of token on slot '+slot_);
 			
             result = getKey(type, false);
             
-            code(result);
+            log.code(result);
 			
             while( result == OK )
             {
-				message('Key found! We add it in the list');
+				log.message('Key found! We add it in the list');
                 list = createKeyResponse(type, list);
                 result = getKey(type, false);
             }
@@ -1085,17 +1110,17 @@ TODO:
                         break;
                 };
             }
-            return result>>>0;
+            return prepareResponse(result,undefined);
         }
 
         token.getRSAPublicKeyHandle = function(key){ return getRSAKeyHandle(KEY_RSA_PRIVATE, key);}
         token.getRSAPrivateKeyHandle = function(key){ return getRSAKeyHandle(KEY_RSA_PUBLIC, key);}
         var getRSAKeyHandle = function(type, key)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to get handle of RSA key from token on slot '+slot_);
+            log.message('Trying to get handle of RSA key from token on slot '+slot_);
 
             var result = undefined;
             var value = undefined
@@ -1121,12 +1146,12 @@ TODO:
                     break;
             }
 
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
-                message('\tRSA key handle is: '+value);
-                return value;
+                log.message('\tRSA key handle is: '+value);
+                return prepareResponse(result,value);
             }
             return result;
         }
@@ -1138,10 +1163,10 @@ TODO:
         token.exportRSAPublicKey = function(key){ return exportKey(KEY_RSA_PUBLIC, key);}
         var exportKey = function(type, key)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
-            message('Trying to export key from token on slot '+slot_);
+            log.message('Trying to export key from token on slot '+slot_);
 
             var result = undefined;
 
@@ -1155,13 +1180,13 @@ TODO:
                     break;
             }
 
-            code(result);
+            log.code(result);
             
             if(result == OK)
             {
                 var value = interface_.base64pubkey;
-                message('\tRSA public key is: '+value);
-                return value;
+                log.message('\tRSA public key is: '+value);
+                return prepareResponse(result,value);
             }
             return result;
         }
@@ -1171,36 +1196,43 @@ TODO:
         */
         token.getSpace = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
             var result = interface_.UT_FS_GetSpace(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
-                return {used:interface_.UsedSpace, free: interface_.FreeSpace, total:interface_.UsedSpace+interface_.FreeSpace};
-            return result>>>0;
+			{
+				var value = {used:interface_.UsedSpace, free: interface_.FreeSpace, total:interface_.UsedSpace+interface_.FreeSpace};
+                return prepareResponse(result,value);
+            }
+			
+			return prepareResponse(result,undefined);
         }
 
         token.countFiles = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
             var result = interface_.UT_FS_GetFileCount(handle_);
             
-            code(result);
+            log.code(result);
             
             if(result == OK)
-                return interface_.FileCount;
-            return result>>>0;
+			{
+				var value = interface_.FileCount;
+                return prepareResponse(result,value);
+			}
+            return prepareResponse(result,undefined);
         }
 
         token.getFiles = function()
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             
             var list = [];
             
@@ -1227,8 +1259,8 @@ TODO:
 
         token.getFile = function(filename)
         {
-            if( handle_ == undefined )
-                return undefined;
+            //if( handle_ == undefined )
+                //return undefined;
             return new File(interface_, handle_, filename);
         }
 
@@ -1244,26 +1276,26 @@ TODO:
         
         var init = function()
         {
-            message('New interface created');
-            message('Trying to initialize it');
+            log.message('New interface created');
+            log.message('Trying to initialize it');
 			
             var result = element_.UT_Initialize();
 			
-			code(result);
+			log.code(result);
         }
         
         var close = function()
         {
             element_.UT_Finalize();
-            message('Interface is finalized.');
+            log.message('Interface is finalized.');
         }
         
         interface_.getTokens = function()
         {
-            message('Trying to get first token');
+            log.message('Trying to get first token');
             var list = [];
             var result = element_.UT_GetFirstToken();
-			code(result);
+			log.code(result);
 
             if (result == OK)
             {
@@ -1274,9 +1306,9 @@ TODO:
                 return list;
             }
             
-            message('Trying to get next token');
+            log.message('Trying to get next token');
             result = element_.UT_GetNextToken();
-			code(result);
+			log.code(result);
 			
             while(result == OK)
             {
@@ -1288,7 +1320,7 @@ TODO:
 		
 		var updateTokenList = function(list)
 		{
-			message('Will add the token to the list');
+			log.message('Will add the token to the list');
 			var details = getTokenDetails(element_.SlotID);
 			if( details != undefined)
 				list.push( details );
