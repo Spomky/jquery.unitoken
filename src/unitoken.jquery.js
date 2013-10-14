@@ -65,6 +65,7 @@ TODO:
     var KEY_MD5               = 0xA0000007;
     var KEY_SHA1HMAC          = 0xA0000008;
     var KEY_SHA1              = 0xA0000009;
+    var KEY_BAD_TYPE          = 0xA0000010;
 
     var defaults = {
         debug: false
@@ -73,116 +74,119 @@ TODO:
 
     var getCodeMessage = function(code)
     {
-		code >>>= 0;
-		var msg;
-		switch(code)
-		{
-			case OK:
-				msg = "No error";
-				break;
-			case NOT_INITIALIZE:
-				msg = "Library not initialized";
-				break;
-			case BUFFER_TOO_SMALL:
-				msg = "Buffer is not big enough";
-				break;
-			case ARGUMENTS_BAD:
-				msg = "Invalid parameters";
-				break;
-			case NO_PERMISSION:
-				msg = "No permission";
-				break;
-			case NO_TOKEN:
-				msg = "No token available";
-				break;
-			case TOKEN_HANDLE_INVALID:
-				msg = "Invalid token handle";
-				break;
-			case SLOT_FULL:
-				msg = "Slot is full. No more token can be added";
-				break;
-			case SLOT_ID_INVALID:
-				msg = "Invalid slot";
-				break;
-			case DEVICE_ERROR:
-				msg = "Device error";
-				break;
-			case ALREADY_INITIALIZE:
-				msg = "The token is already initialized";
-				break;
-			case DEVICE_TX:
-				msg = "Communication error";
-				break;
-			case PIN_ERROR:
-				msg = "PIN error";
-				break;
-			case USER_LOCKED:
-				msg = "User has been locked";
-				break;
-			case USER_FULL:
-				msg = "No more users can logon";
-				break;
-			case NO_USER:
-				msg = "No such user available";
-				break;
-			case DEVICE_NEED_OPEN:
-				msg = "Device is not opened yet";
-				break;
-			case KEY_EXIST:
-				msg = "The key already exists";
-				break;
-			case NO_KEY:
-				msg = "No key available";
-				break;
-			case KEY_FULL:
-				msg = "The token is full and can't generate new keys";
-				break;
-			case KEY_HANDLE_INVALID:
-				msg = "Key handle error";
-				break;
-			case KEY_GENERATE:
-				msg = "Key generation failed";
-				break;
-			case NOT_ALLOWED:
-				msg = "Operation not allowed";
-				break;
-			case OPERATE_INVALID:
-				msg = "Invalid operation";
-				break;
-			case FS_INITIALIZE_FAILED:
-				msg = "File initialization failed";
-				break;
-			case FS_NOSPACE:
-				msg = "Not enough filesystem space";
-				break;
-			case FS_OFFSET_INVALID:
-				msg = "Designated file offset is invalid";
-				break;
-			case FS_DATA_LEN_RANGE:
-				msg = "Beyond data range";
-				break;
-			case FS_NO_OPEN:
-				msg = "The file is not opened";
-				break;
-			case FS_NO_FILE:
-				msg = "No file";
-				break;
-			case FS_LIST_END:
-				msg = "End of file list";
-				break;
-			case FS_NAME_LEN_RANGE:
-				msg = "Filename is too long";
-				break;
-			case FS_FILE_EXIST:
-				msg = "The file already exists";
-				break;
-			default:
-				msg = "The result of the method has code: 0x"+code.toString(16);
-		};
-		return msg;
+        code >>>= 0;
+        var msg;
+        switch(code)
+        {
+            case OK:
+                msg = "No error";
+                break;
+            case NOT_INITIALIZE:
+                msg = "Library not initialized";
+                break;
+            case BUFFER_TOO_SMALL:
+                msg = "Buffer is not big enough";
+                break;
+            case ARGUMENTS_BAD:
+                msg = "Invalid parameters";
+                break;
+            case NO_PERMISSION:
+                msg = "No permission";
+                break;
+            case NO_TOKEN:
+                msg = "No token available";
+                break;
+            case TOKEN_HANDLE_INVALID:
+                msg = "Invalid token handle";
+                break;
+            case SLOT_FULL:
+                msg = "Slot is full. No more token can be added";
+                break;
+            case SLOT_ID_INVALID:
+                msg = "Invalid slot";
+                break;
+            case DEVICE_ERROR:
+                msg = "Device error";
+                break;
+            case ALREADY_INITIALIZE:
+                msg = "The token is already initialized";
+                break;
+            case DEVICE_TX:
+                msg = "Communication error";
+                break;
+            case PIN_ERROR:
+                msg = "PIN error";
+                break;
+            case USER_LOCKED:
+                msg = "User has been locked";
+                break;
+            case USER_FULL:
+                msg = "No more users can logon";
+                break;
+            case NO_USER:
+                msg = "No such user available";
+                break;
+            case DEVICE_NEED_OPEN:
+                msg = "Device is not opened yet";
+                break;
+            case KEY_EXIST:
+                msg = "The key already exists";
+                break;
+            case NO_KEY:
+                msg = "No key available";
+                break;
+            case KEY_FULL:
+                msg = "The token is full and can't generate new keys";
+                break;
+            case KEY_HANDLE_INVALID:
+                msg = "Key handle error";
+                break;
+            case KEY_GENERATE:
+                msg = "Key generation failed";
+                break;
+            case NOT_ALLOWED:
+                msg = "Operation not allowed";
+                break;
+            case OPERATE_INVALID:
+                msg = "Invalid operation";
+                break;
+            case FS_INITIALIZE_FAILED:
+                msg = "File initialization failed";
+                break;
+            case FS_NOSPACE:
+                msg = "Not enough filesystem space";
+                break;
+            case FS_OFFSET_INVALID:
+                msg = "Designated file offset is invalid";
+                break;
+            case FS_DATA_LEN_RANGE:
+                msg = "Beyond data range";
+                break;
+            case FS_NO_OPEN:
+                msg = "The file is not opened";
+                break;
+            case FS_NO_FILE:
+                msg = "No file";
+                break;
+            case FS_LIST_END:
+                msg = "End of file list";
+                break;
+            case FS_NAME_LEN_RANGE:
+                msg = "Filename is too long";
+                break;
+            case FS_FILE_EXIST:
+                msg = "The file already exists";
+                break;
+            case KEY_BAD_TYPE:
+                msg = "Key type not recognized";
+                break;
+            default:
+                msg = "The result of the method has code: 0x"+code.toString(16);
+        };
+        return msg;
     }
 
-	var log = {};
+    var log = {};
     log.message = function(msg)
     {
         if(settings.debug)
@@ -192,17 +196,17 @@ TODO:
     log.code = function(code)
     {
         if(settings.debug)
-			log.message( getCodeMessage(code) );
+            log.message( getCodeMessage(code) );
     }
-	
-	var prepareResponse = function(code, data)
-	{
-		return {
-			code: code >>>0,
-			message: getCodeMessage(code),
-			result: data
-		};
-	}
+    
+    var prepareResponse = function(code, data)
+    {
+        return {
+            code: code >>>0,
+            message: getCodeMessage(code),
+            result: data
+        };
+    }
 
 
     var File = function(iface, handle, filename)
@@ -257,11 +261,11 @@ TODO:
             var result = interface_.UT_FS_GetFileSize(handle_, filename_);
             log.code(result);
             if(result == OK)
-			{
-				var value = interface_.FileSize;
+            {
+                var value = interface_.FileSize;
                 return prepareResponse(result,value);
-			}
-			
+            }
+            
             return undefined;
         }
 
@@ -274,11 +278,11 @@ TODO:
             var result = interface_.UT_FS_GetFilePermission(handle_, filename_);
             log.code(result);
             if(result == OK)
-			{
-				var value = interface_.FilePermission;
+            {
+                var value = interface_.FilePermission;
                 return prepareResponse(result,value);
-			}
-			
+            }
+            
             return undefined;
         }
 
@@ -299,10 +303,10 @@ TODO:
             var result = interface_.UT_FS_ReadFile(handle_, filename_, offset, len);
             log.code(result);
             if(result == OK)
-			{
-				var value = interface_.OutBuf;
+            {
+                var value = interface_.OutBuf;
                 return prepareResponse(result,value);
-			}
+            }
             return prepareResponse(result,undefined);
         }
 
@@ -341,9 +345,9 @@ TODO:
             if(result == OK)
             {
                 handle_ = interface_.Handle;
-				log.message('Handle is 0x'+handle_.toString(16));
+                log.message('Handle is 0x'+handle_.toString(16));
             }
-			return prepareResponse(result,undefined);
+            return prepareResponse(result,undefined);
         }
         
         //Useless
@@ -351,7 +355,7 @@ TODO:
         {
             //if( handle_== undefined )
                 //return undefined;
-			
+            
             log.message('Trying to close token on slot '+slot_);
 
             var result = interface_.UT_CloseDevice(handle_);
@@ -401,7 +405,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.FirmwareVersion;
+                var value = interface_.FirmwareVersion;
                 log.message('\tFirmware version is 0x'+value.toString(16));
                 return value;
             }
@@ -448,7 +452,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.Level;
+                var value = interface_.Level;
                 log.message('\tCurrent user level is '+(value==0?'guest':(value==1?'user':'admin')));
                 return value;
             }
@@ -462,12 +466,12 @@ TODO:
                 //return undefined;
             
             log.message('Trying to change PIN of token on slot '+slot_);
-			
-			if(!mode)
-			{
-				log.message('Mode is not set. Using current permission');
-				mode = 0x1;
-			}
+            
+            if(!mode)
+            {
+                log.message('Mode is not set. Using current permission');
+                mode = 0x1;
+            }
 
             var type = getCurrentUserLevel();
             if( mode == 0x2)
@@ -528,7 +532,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.HID;
+                var value = interface_.HID;
                 log.message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
                 return value;
             }
@@ -549,7 +553,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.SoftID;
+                var value = interface_.SoftID;
                 log.message('\tThe ID is '+value+' (0x'+value.toString(16)+')');
                 return value;
             }
@@ -596,7 +600,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.UserAttempt;
+                var value = interface_.UserAttempt;
                 log.message('\tAttempt count is at '+value);
                 return value;
             }
@@ -668,7 +672,7 @@ TODO:
             
             if(result == OK)
             {
-				var value = interface_.OutBuf;
+                var value = interface_.OutBuf;
                 log.message('\tData: '+value);
                 return prepareResponse(result,value);
             }
@@ -721,11 +725,11 @@ TODO:
             log.code(result);
             
             if(result == OK)
-			{
-				var value = interface_.KeyHandle;
+            {
+                var value = interface_.KeyHandle;
                 log.message('\tKey handle is 0x'+value.toString(16));
                 return prepareResponse(result,value);
-			}
+            }
             return prepareResponse(result,undefined);
         }
         
@@ -973,10 +977,10 @@ TODO:
             var result = getKey(type, true);
             
             log.code(result);
-			
+            
             if ( result == OK)
             {
-				log.message('Key found! We add it in the list');
+                log.message('Key found! We add it in the list');
                 list = createKeyResponse(type, list);
             }
             else
@@ -985,14 +989,14 @@ TODO:
             }
             
             log.message('Trying to get next keys 0x'+type.toString(16)+' of token on slot '+slot_);
-			
+            
             result = getKey(type, false);
             
             log.code(result);
-			
+            
             while( result == OK )
             {
-				log.message('Key found! We add it in the list');
+                log.message('Key found! We add it in the list');
                 list = createKeyResponse(type, list);
                 result = getKey(type, false);
             }
@@ -1004,7 +1008,7 @@ TODO:
             var handle = interface_.KeyHandle;
             var length = undefined;
 
-			switch(type)
+            switch(type)
             {
                 case KEY_RSA:
                     var pub = interface_.PubKeyHandle;
@@ -1204,12 +1208,12 @@ TODO:
             log.code(result);
             
             if(result == OK)
-			{
-				var value = {used:interface_.UsedSpace, free: interface_.FreeSpace, total:interface_.UsedSpace+interface_.FreeSpace};
+            {
+                var value = {used:interface_.UsedSpace, free: interface_.FreeSpace, total:interface_.UsedSpace+interface_.FreeSpace};
                 return prepareResponse(result,value);
             }
-			
-			return prepareResponse(result,undefined);
+            
+            return prepareResponse(result,undefined);
         }
 
         token.countFiles = function()
@@ -1222,10 +1226,10 @@ TODO:
             log.code(result);
             
             if(result == OK)
-			{
-				var value = interface_.FileCount;
+            {
+                var value = interface_.FileCount;
                 return prepareResponse(result,value);
-			}
+            }
             return prepareResponse(result,undefined);
         }
 
@@ -1278,10 +1282,10 @@ TODO:
         {
             log.message('New interface created');
             log.message('Trying to initialize it');
-			
+            
             var result = element_.UT_Initialize();
-			
-			log.code(result);
+            
+            log.code(result);
         }
         
         var close = function()
@@ -1295,7 +1299,7 @@ TODO:
             log.message('Trying to get first token');
             var list = [];
             var result = element_.UT_GetFirstToken();
-			log.code(result);
+            log.code(result);
 
             if (result == OK)
             {
@@ -1308,8 +1312,8 @@ TODO:
             
             log.message('Trying to get next token');
             result = element_.UT_GetNextToken();
-			log.code(result);
-			
+            log.code(result);
+            
             while(result == OK)
             {
                 list = updateTokenList(list);
@@ -1317,15 +1321,15 @@ TODO:
             }
             return list;
         }
-		
-		var updateTokenList = function(list)
-		{
-			log.message('Will add the token to the list');
-			var details = getTokenDetails(element_.SlotID);
-			if( details != undefined)
-				list.push( details );
-			return list;
-		}
+        
+        var updateTokenList = function(list)
+        {
+            log.message('Will add the token to the list');
+            var details = getTokenDetails(element_.SlotID);
+            if( details != undefined)
+                list.push( details );
+            return list;
+        }
         
         interface_.getToken = function(slot)
         {
