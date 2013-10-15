@@ -7,7 +7,7 @@ This module is only available for Mozilla Firefox browsers. Secutech does not pr
 
 This jQuery plugin has only been tested with an UnitToken Pro.
 
-It needs jQuery 2.
+It needs jQuery version 2.
 
 ## How to use it ##
 First, ensure that the plugin for Firefox is installed. See [docs/install plugin.md](docs/install plugin.md) if necessary.
@@ -18,7 +18,7 @@ Next, just create an HTML page that includes jQuery, this plugin and an embed ob
     <html>
         <head>
             <script type="text/javascript" src="jquery.min.js"></script>
-            <script type="text/javascript" src="unitoken.jquery.js"></script>
+            <script type="text/javascript" src="unitoken.jquery.min.js"></script>
         </head>
         <body>
             <embed id="interface" class="interface" type="application/mozilla-npsecuunitoken-scriptable-plugin" />
@@ -34,3 +34,4 @@ And voila!
 You are ready to access on your token.
 
 Look at the « docs » folder to get details about usefull methods.
+You will learn how to use all methods and how to use callbacks called on events.

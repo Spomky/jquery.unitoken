@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Events</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/unitoken.jquery.js"></script>
+    </head>
+    <body>
+        <h1>Events</h1>
+        <embed id="interface" class="interface" type="application/mozilla-npsecuunitoken-scriptable-plugin" />
+		<input type="button" id="get_random_data" value="Random data">
+        <div id="log">
+            <select id="user_level" name="user_level">
+				<option value="1">User</option>
+				<option value="2">Admin</option>
+            </select>
+            <input type="password" id="pin" name="pin">
+            <input type="button" id="connect" value="Logon">
+            <input type="button" id="disconnect" value="Logout">
+            <input type="button" id="delete" value="Delete keys">
+        </div>
+        <div id="detection"></div>
+        <script type="text/javascript" src="js/events.js"></script>
+    </body>
+</html>

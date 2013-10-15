@@ -1,4 +1,4 @@
-$(function(){
+(function($) {
 	//We select the 'interface' element in the HTML page and initialize the plugin.
     //The option 'debug' is enabled. This options will help us by sending informations in the console.
 	var interface_ = $('#interface').unitoken({
@@ -132,4 +132,4 @@ $(function(){
     
 	//Call updateTokenList() on page load.
     updateTokenList();
-});
+})(jQuery);

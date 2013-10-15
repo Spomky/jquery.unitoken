@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Gestion de votre clé d'identification</title>
+        <meta charset="utf-8">
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="../src/unitoken.jquery.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+    </head>
+    <body>
+        <h1>Gestion de votre clé d'identification</h1>
+        <embed id="interface" class="interface" type="application/mozilla-npsecuunitoken-scriptable-plugin" />
+        <div id="messages"></div>
+        <div id="tokens">
+			<select id="token_list" name="token_list">
+				<option value="-1">--Select a token--</option>
+			</select>
+			<input type="button" id="update_tokens" value="Update list">
+			<div id="token_informations"></div>
+		</div>
+		
+        <div id="log">
+            <select id="user_level" name="user_level">
+				<option value="1">User</option>
+				<option value="2">Admin</option>
+            </select>
+            <input type="password" id="pin" name="pin">
+            <input type="button" id="connect" value="Logon">
+            <input type="button" id="disconnect" value="Logout">
+        </div>
+        <div id="operations">
+			<div id="random">
+				<input type="text" id="get_random_length" name="get_random_length">
+				<input type="button" id="get_random" value="Get random data">
+				<input type="button" id="clear_random" value="Clear">
+				<div id="random_data"></div>
+			</div>
+			<div id="id">
+				<input type="text" id="new_id" name="new_id">
+				<input type="button" id="set_id" value="Set ID">
+			</div>
+			<div id="sid">
+				<input type="text" id="new_sid" name="new_sid">
+				<input type="button" id="set_sid" value="Set Soft ID">
+			</div>
+			<div id="attempt">
+				<input type="text" id="new_attempt" name="new_attempt">
+				<input type="button" id="set_attempt" value="Set attempt count">
+			</div>
+			<div id="change_pin">
+				<input type="password" id="old_pin" name="old_pin" placeholder="Old PIN">
+				<input type="password" id="new_pin" name="new_pin" placeholder="New PIN">
+				<input type="password" id="new_pin_repeat" name="new_pin_repeat" placeholder="Repeat new PIN">
+				<input type="button" id="set_new_pin" value="Change PIN">
+			</div>
+			<div id="format">
+				<input type="button" id="format_key" value="!!! Format key !!!">
+			</div>
+        </div>
+        <div id="keys">
+			<table>
+				<thead>
+					<th>Handle</th>
+					<th>Type</th>
+					<th>Actions</th>
+				</thead>
+				<tbody id='key_list'>
+				</tbody>
+			</table>
+        </div>
+        <div id="files">
+			<table>
+				<thead>
+					<th>Filename</th>
+					<th>Size</th>
+					<th>Permission</th>
+					<th>Actions</th>
+				</thead>
+				<tbody id='file_list'>
+				</tbody>
+			</table>
+        </div>
+		
+        <script type="text/javascript" src="js/operations.js"></script>
+    </body>
+</html>
