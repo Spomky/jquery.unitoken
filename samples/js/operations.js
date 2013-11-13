@@ -1,4 +1,4 @@
-$(function(){
+(function($) {
     var interface_ = $('#interface').unitoken({
         //debug: true
     });
@@ -72,67 +72,65 @@ $(function(){
             var token = interface_.getToken(value);
             if( token )
             {
-                var des_keys = token.getDESKeys();
-                var des3_keys = token.getDES3Keys();
-                var aes_keys = token.getAESKeys();
-                var md5_keys = token.getMD5HMACKeys();
-                var sha1_keys = token.getSHA1HMACKeys();
-                var rsa_keys = token.getRSAKeys();
+                var count = token.countKeys();
+                var keys = token.getKeys().result;
                 var result ='';
-                
-                if(des_keys.length+des3_keys.length+aes_keys.length+md5_keys.length+sha1_keys.length+rsa_keys.length == 0)
+				
+                if(count.total == 0)
                 {
                     result = '<tr><td colspan="3">No file found</td></tr>';
                     return;
                 }
-                for(var i = 0;i<des_keys.length;i++)
+				
+                for(var i = 0;i<keys.DES.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>0x'+des_keys[i].toString(16)+'</td>';
+                    result += '<td>0x'+keys.DES.result[i].toString(16)+'</td>';
                     result += '<td>DES</td>';
                     result += '<td></td>';
                     result += '</tr>';
                 }
-                for(var i = 0;i<des3_keys.length;i++)
+                for(var i = 0;i<keys.DES3.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>0x'+des3_keys[i].toString(16)+'</td>';
+                    result += '<td>0x'+keys.DES3.result[i].toString(16)+'</td>';
                     result += '<td>DES3</td>';
                     result += '<td></td>';
                     result += '</tr>';
                 }
-                for(var i = 0;i<aes_keys.length;i++)
+                for(var i = 0;i<keys.AES.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>0x'+aes_keys[i].handle.toString(16)+'</td>';
-                    result += '<td>AES'+aes_keys[i].length+'</td>';
+                    result += '<td>0x'+keys.AES.result[i].handle.toString(16)+'</td>';
+                    result += '<td>AES'+keys.AES.result[i].length+'</td>';
                     result += '<td></td>';
                     result += '</tr>';
                 }
-                for(var i = 0;i<md5_keys.length;i++)
+                for(var i = 0;i<keys.MD5HMAC.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>0x'+md5_keys[i].handle.toString(16)+'</td>';
-                    result += '<td>MD5 ('+md5_keys[i].length+')</td>';
+                    result += '<td>0x'+keys.MD5HMAC.result[i].handle.toString(16)+'</td>';
+                    result += '<td>MD5 ('+keys.MD5HMAC.result[i].length+')</td>';
                     result += '<td></td>';
                     result += '</tr>';
                 }
-                for(var i = 0;i<sha1_keys.length;i++)
+                for(var i = 0;i<keys.SHA1HMAC.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>0x'+sha1_keys[i].handle.toString(16)+'</td>';
-                    result += '<td>SHA1 ('+sha1_keys[i].length+')</td>';
+                    result += '<td>0x'+keys.SHA1HMAC.result[i].handle.toString(16)+'</td>';
+                    result += '<td>SHA1 ('+keys.SHA1HMAC.result[i].length+')</td>';
                     result += '<td></td>';
                     result += '</tr>';
                 }
-                for(var i = 0;i<rsa_keys.length;i++)
+                /*for(var i = 0;i<keys.RSA.result.length;i++)
                 {
                     result += '<tr>';
-                    result += '<td>Pub: 0x'+rsa_keys[i].pub_key.toString(16)+'<br/>Priv: 0x'+rsa_keys[i].priv_key.toString(16)+'</td>';
+                    result += '<td>Pub: 0x'+keys.RSA.result[i].pub_key.toString(16)+'<br/>Priv: 0x'+keys.RSA.result[i].priv_key.toString(16)+'</td>';
                     result += '<td>RSA</td>';
                     result += '<td></td>';
                     result += '</tr>';
-                }
+                }*/
+				
                 dest.html(result);
             }
         }
@@ -209,8 +207,6 @@ $(function(){
         updateTokenKeys();
     }
     
-    //var tokens = interface_.getTokens();
-    
     $("#update_tokens").click(function(){
         updateTokenList();
     });
@@ -279,7 +275,9 @@ $(function(){
         {
             var token = interface_.getToken(value);
             var result = token.getRandomData(random_length);
-            dest.html(result);
+			
+			if(result.code == 0);
+			    dest.html(result.result);
         }
         else
         {
@@ -387,4 +385,4 @@ $(function(){
 		//token.generateRSA256KeyPair();
 		//token.generateMD5HMACKey(5);
 		//token.generateSHA1HMACKey(5);
-});
+})(jQuery);
